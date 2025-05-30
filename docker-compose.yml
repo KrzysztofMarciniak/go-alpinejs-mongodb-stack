@@ -2,38 +2,40 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: Dockerfile
     volumes:
       - ./backend:/src
     ports:
       - "8080:8080"
     environment:
       MONGO_URI: mongodb://mongo:27017/appdb
+
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-      target: dev           
+      dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
     ports:
-      - "3000:3000"         # Vite dev server
+      - "5173:5173"
     environment:
       - NODE_ENV=development
+
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      target: serve
     depends_on:
       - frontend
-    volumes:
-      - ./frontend/src:/usr/share/nginx/html:ro
     ports:
       - "80:80"
+
   mongo:
     image: mongo:7.0
     volumes:
       - mongo_data:/data/db
     ports:
       - "27017:27017"
+
 volumes:
   mongo_data:
-

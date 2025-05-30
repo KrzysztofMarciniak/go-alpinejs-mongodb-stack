@@ -1,0 +1,14 @@
+# Build Stage
+FROM node AS builder
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+WORKDIR /app
+COPY . .
+RUN npm run build
+
+# Serve Stage
+FROM nginx:alpine AS serve
+COPY --from=builder /app/dist /usr/share/nginx/html

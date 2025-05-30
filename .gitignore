@@ -24,3 +24,6 @@ go.work.sum
 # env file
 .env
 backend/tmp/
+frontend/node_modules
+frontend/package-lock.json
+frontend/dist

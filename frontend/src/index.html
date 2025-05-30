@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Date Fetch</title>
+  <script type="module" src="/main.js"></script>
 </head>
+
 <body>
-  <div id="date">Loading...</div>
+  <div class="size-48 text-center p-4 bg-gray-200" id="date">Loading...</div>
   <script>
     fetch('http://localhost:8080/api/date')
-      .then(response => response.json())
+      .then(res => res.json())
       .then(data => {
         document.getElementById('date').textContent = data.date;
       })
@@ -19,5 +22,5 @@
       });
   </script>
 </body>
-</html>
 
+</html>
