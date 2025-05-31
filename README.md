@@ -42,33 +42,41 @@ flowchart TD
 ### Development Graph
 ```mermaid
 flowchart TD
- subgraph External_Access["External Access"]
-        User["Developer / Browser"]
+  subgraph External_Access["External Access"]
+    User["Developer / Browser"]
   end
- subgraph Default_Network["Default Network (Dev Backend + Frontend)"]
-        frontend["Frontend (vite + tailwindcss)"]
-        api["Go Backend (api)"]
-        mongo["MongoDB"]
-  end
- subgraph Monitoring_Network["Monitoring Network (Dev Monitoring)"]
-        prometheus["Prometheus"]
-        grafana["Grafana (port 3000)"]
-  end
-    User -- Access UI (80) --> frontend
-    frontend -- API Calls (8080) --> api
-    api -- DB Connection (27017) --> mongo
-    api -- Metrics Endpoint (9091) --> prometheus
-    prometheus -- Feeds Data --> grafana
-    User -- Access Dashboards (3000) --> grafana
 
-    style User stroke:#000000,stroke-width:2px,fill:#E3F2FD
-    style frontend stroke:#2962FF,stroke-width:2px,fill:#BBDEFB
-    style api stroke:#2962FF,stroke-width:2px,fill:#90CAF9
-    style mongo stroke:#00C853,stroke-width:2px,fill:#B9F6CA
-    style prometheus stroke:#FFD600,stroke-width:2px,fill:#FFF9C4
-    style grafana stroke:#FF6D00,stroke-width:2px,fill:#FFE0B2
-    style External_Access stroke:#D50000,stroke-width:2px,fill:#FFEBEE
-    style Monitoring_Network stroke:#AA00FF,stroke-width:3px,fill:#F3E5F5,stroke-dasharray: 5 5
+  subgraph Default_Network["Default Network (Dev Backend + Frontend)"]
+    frontend["Frontend (vite + tailwindcss)"]
+    api["Go Backend (api)"]
+    mongo["MongoDB"]
+    grafana["Grafana (port 3000)"]
+  end
+
+  subgraph Monitoring_Network["Monitoring Network (Dev Monitoring)"]
+    prometheus["Prometheus"]
+  end
+
+  %% Connections with ports and labels
+  User -- "Access UI (80)" --> frontend
+  frontend -- "API Calls (8080)" --> api
+  api -- "DB Connection (27017)" --> mongo
+  api -- "Metrics Endpoint (9091)" --> prometheus
+  prometheus -- "Feeds Data" --> grafana
+  User -- "Access Dashboards (3000)" --> grafana
+
+  %% Styling nodes
+  style User stroke:#000000,stroke-width:2px,fill:#E3F2FD
+  style frontend stroke:#2962FF,stroke-width:2px,fill:#BBDEFB
+  style api stroke:#2962FF,stroke-width:2px,fill:#90CAF9
+  style mongo stroke:#00C853,stroke-width:2px,fill:#B9F6CA
+  style prometheus stroke:#FFD600,stroke-width:2px,fill:#FFF9C4
+  style grafana stroke:#FF6D00,stroke-width:2px,fill:#FFE0B2
+
+  %% Styling subgraphs
+  style External_Access stroke:#D50000,stroke-width:2px,fill:#FFEBEE
+  style Default_Network stroke:#2962FF,stroke-width:3px,fill:#E3F2FD,stroke-dasharray: 5 5
+  style Monitoring_Network stroke:#AA00FF,stroke-width:3px,fill:#F3E5F5,stroke-dasharray: 5 5
 ```
 
 to use grafana with prometheus go to http://localhost:3000/
