@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   api:
     build:
@@ -5,70 +7,80 @@ services:
     volumes:
       - ./backend:/src
     ports:
-      - "8080:8080"
+      - "8080:8080"            # Public API is legitimately exposed
     environment:
       - MONGO_URI=mongodb://mongo:27017/appdb
     networks:
       - default
       - monitoring
     expose:
-      - "9091"
+      - "9091"                 # We expose the metrics endpoint to Prometheus only
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
-    volumes: [] 
+    volumes: []
     ports:
-      - "80:80"
+      - "80:80"                # Public-facing frontend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
     networks:
       default:
+        aliases:
+          - frontend
       monitoring:
         aliases:
           - frontend
     expose:
-      - "9113"
+      - "9113"                 # The NGINX status endpoint visible only to the exporter
+
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter:latest
-    ports:
-      - "9113:9113"  
+    # By attaching this exporter only to "monitoring", we ensure it scrapes the frontend’s status privately
     networks:
-      - default
+      - monitoring
+    expose:
+      - "9113"                 # Exposed internally for Prometheus to scrape
     command:
-      - '-nginx.scrape-uri=http://frontend:80/nginx_status'
+      - "-nginx.scrape-uri=http://frontend:80/nginx_status"
+    # No ports: → nobody on the host can accidentally poke the exporter
+
   mongo:
     image: mongo
     volumes:
       - mongo_data:/data/db
     networks:
-      - default
+      - default                 # Database remains on the default bridge—accessible only to containers on that network
+
   prometheus:
     image: prom/prometheus
     volumes:
       - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - "--config.file=/etc/prometheus/prometheus.yml"
     networks:
-      - monitoring
-      - default
+      - monitoring              # Only on the monitoring network
+    expose:
+      - "9090"                  # Prometheus listens internally, no host binding
   grafana:
     image: grafana/grafana:latest
-    ports:
-      - "3000:3000"   
     volumes:
       - grafana_data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
-      - monitoring    # prometheus net
-      - default       
+      - monitoring
+    ports:
+      - "3000:3000"        # Expose Grafana dashboard publicly
 volumes:
   mongo_data:
   grafana_data:
+
 networks:
   default:
     driver: bridge
   monitoring:
     driver: bridge
+    internal: true             # THIS IS THE CRITICAL LINE: makes “monitoring” internal-only
