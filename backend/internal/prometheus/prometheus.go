@@ -23,6 +23,6 @@ func InitPrometheus() {
 	prometheusMux.Handle("/metrics", promhttp.Handler())
 
 	go func() {
-		http.ListenAndServe("127.0.0.1:9091", prometheusMux)
+		http.ListenAndServe("0.0.0.0:9091", prometheusMux)
 	}()
 }
