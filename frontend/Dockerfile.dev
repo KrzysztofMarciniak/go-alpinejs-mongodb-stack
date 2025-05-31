@@ -2,16 +2,10 @@ FROM node:alpine
 
 WORKDIR /app
 
-# Copy only package files first — this enables Docker cache for npm install
 COPY package.json package-lock.json* ./
-
 RUN npm install
 
-# Now copy the rest of the source code
 COPY . .
-
-# Run build after dependencies are ready
-RUN npm run build
 
 EXPOSE 5173
 

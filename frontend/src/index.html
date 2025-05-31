@@ -6,21 +6,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Date Fetch</title>
   <script type="module" src="/main.js"></script>
+  <link rel="stylesheet" href="/index.css" />
 </head>
 
-<body>
-  <div class="size-48 text-center p-4 bg-gray-200" id="date">Loading...</div>
-  <script>
-    fetch('http://localhost:8080/api/date')
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('date').textContent = data.date;
-      })
-      .catch(err => {
-        document.getElementById('date').textContent = 'Error fetching date';
-        console.error(err);
-      });
-  </script>
+<body class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div x-data="{ date: 'Loading...' }" x-init="fetch('http://localhost:8080/api/date')
+        .then(res => res.json())
+        .then(data => date = data.date)
+        .catch(() => date = 'Error fetching date')"
+    class="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
+    <h1 class="text-2xl font-semibold mb-4">Current Server Date</h1>
+    <p class="text-4xl font-mono text-blue-600" x-text="date"></p>
+    <button @click="date = 'Loading...'; fetch('http://localhost:8080/api/date')
+          .then(res => res.json())
+          .then(data => date = data.date)
+          .catch(() => date = 'Error fetching date')"
+      class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+      Refresh
+    </button>
+  </div>
 </body>
 
 </html>

@@ -1,3 +1,3 @@
 #!/bin/bash
 echo "Deploying to production"
-docker compose up nginx api mongo
+docker compose -f docker-compose.prod.yml up --build -d

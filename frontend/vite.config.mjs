@@ -9,5 +9,9 @@ export default defineConfig({
     outDir: '../dist',      
     emptyOutDir: true
   },
+  server: {
+    port: 80,
+    host: true,
+  },
   plugins: [tailwindcss()]
 })
