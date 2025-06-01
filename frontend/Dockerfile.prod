@@ -1,19 +1,50 @@
-FROM node:alpine AS builder
-
+############################################
+# Step 1 — Build frontend using Node (outputs to /dist)
+############################################
+FROM node:alpine AS frontend-build
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Build the frontend
 COPY . .
 RUN npm run build
 
-FROM nginx:alpine AS serve
+############################################
+# Step 2 — Final image with NGINX + ModSecurity
+############################################
+FROM owasp/modsecurity-crs:nginx-alpine AS production
 
-# Copy your custom nginx.conf into the container, overwriting the default
-COPY nginx-prod/nginx.conf /etc/nginx/nginx.conf
+# Need root access for setup tasks
+USER root
 
-# Copy the static output from the builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Create folders for ModSecurity config and TLS certs
+RUN mkdir -p /etc/modsecurity \
+    && mkdir -p /etc/nginx/certs
 
-EXPOSE 80
+# Generate a self-signed TLS cert (good for 10 years)
+# Note: Replace the subject info with real values in production
+RUN apk add --no-cache openssl \
+    && openssl req -x509 -nodes -days 3650 \
+         -subj "/C=US/ST=State/L=City/O=Organization/OU=IT Department/CN=localhost" \
+         -newkey rsa:2048 \
+         -keyout /etc/nginx/certs/internal.key \
+         -out /etc/nginx/certs/internal.crt
+
+# Custom ModSecurity config
+COPY nginx-prod/modsecurity.conf /etc/modsecurity/modsecurity.conf
+
+# Template version of nginx.conf
+COPY nginx-prod/nginx.conf /etc/nginx/templates/nginx.conf.template
+
+# Copy built frontend files into NGINX’s default web root
+COPY --from=frontend-build /app/dist /usr/share/nginx/html
+
+# Clean up: remove openssl to keep the image small
+RUN apk del openssl
+
+EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

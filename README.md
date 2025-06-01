@@ -7,7 +7,7 @@ flowchart TD
         Browser["Browser"]
   end
  subgraph Public_Network["Public Network"]
-        NGINX["NGINX Reverse Proxy (Frontend + API)"]
+        NGINX["NGINX Reverse Proxy with Self-signed TLS cert (generated at build time), WAF (Frontend + API /api/)"]
         Grafana["Grafana (port 3000)"]
   end
  subgraph Internal_Backend["Internal Backend"]
@@ -21,21 +21,20 @@ flowchart TD
     Browser <-- User Access --> NGINX
     Browser <-- Admin Access --> Grafana
     NGINX -- HTTP (80) / HTTPS (443) --> Browser
-    NGINX -- Internal API (8080) --> GoAPI
-    GoAPI -- DB Connection (8080) --> MongoDB
-    NGINX -- Metrics (9113) /nginx_status --> NGINX_Exporter
+    NGINX -- Internal API (8080) only for internal backend network --> GoAPI
+    GoAPI <-- DB Connection (8080) --> MongoDB
+    NGINX -- Metrics /nginx_status only for monitoring network --> NGINX_Exporter
     GoAPI -- Metrics (9091) /metrics --> Prometheus
-    NGINX_Exporter --> Prometheus
-    Prometheus --> Grafana
+    NGINX_Exporter -- "nginx-exporter:9113" --> Prometheus
+    Prometheus -- nginx + go monitoring --> Grafana
+
     style Browser stroke:#000000
-    style NGINX stroke:#00C853
     style Grafana stroke:#FF6D00
     style GoAPI stroke:#2962FF
     style MongoDB stroke:#00C853
     style NGINX_Exporter stroke:#00C853
     style Prometheus stroke:#FFD600
     style External_Access stroke:#D50000
-    style Public_Network stroke:#D50000
     style Internal_Backend stroke:#2962FF
     style Monitoring_Network stroke:#AA00FF
 ```

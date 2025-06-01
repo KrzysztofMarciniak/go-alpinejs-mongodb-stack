@@ -31,7 +31,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	prometheus.InitPrometheus() // Start Prometheus server
 
-	http.HandleFunc("/api/health", healthHandler)
-	http.HandleFunc("/api/date", dateHandler)
+	http.HandleFunc("/health", healthHandler)
+	http.HandleFunc("/date", dateHandler)
 	http.ListenAndServe(":8080", nil)
 }

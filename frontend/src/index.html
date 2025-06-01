@@ -10,14 +10,16 @@
 </head>
 
 <body class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div x-data="{ date: 'Loading...' }" x-init="fetch('http://localhost:8080/api/date')
+  <div x-data="{ date: 'Loading...' }" x-init="fetch('/api/date')
+
         .then(res => res.json())
         .then(data => date = data.date)
         .catch(() => date = 'Error fetching date')"
     class="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
     <h1 class="text-2xl font-semibold mb-4">Current Server Date</h1>
     <p class="text-4xl font-mono text-blue-600" x-text="date"></p>
-    <button @click="date = 'Loading...'; fetch('http://localhost:8080/api/date')
+    <button @click="date = 'Loading...'; fetch('/api/date')
+
           .then(res => res.json())
           .then(data => date = data.date)
           .catch(() => date = 'Error fetching date')"
