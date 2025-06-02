@@ -33,7 +33,7 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus/prometheus.dev.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
     networks:

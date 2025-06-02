@@ -1,50 +1,72 @@
 ############################################
-# Step 1 — Build frontend using Node (outputs to /dist)
+# Stage 1 — Build frontend with Node
 ############################################
 FROM node:alpine AS frontend-build
 WORKDIR /app
 
-# Install dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm install --production
 
-# Build the frontend
 COPY . .
 RUN npm run build
 
-############################################
-# Step 2 — Final image with NGINX + ModSecurity
-############################################
-FROM owasp/modsecurity-crs:nginx-alpine AS production
 
-# Need root access for setup tasks
+############################################
+# Stage 2 — Debian + NGINX + ModSecurity
+############################################
+FROM debian AS production
+
 USER root
 
-# Create folders for ModSecurity config and TLS certs
-RUN mkdir -p /etc/modsecurity \
-    && mkdir -p /etc/nginx/certs
+############################################
+# 1. Install dependencies
+############################################
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    nginx \
+    libnginx-mod-http-modsecurity \
+    modsecurity-crs \
+    curl \
+    openssl \
+    ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
-# Generate a self-signed TLS cert (good for 10 years)
-# Note: Replace the subject info with real values in production
-RUN apk add --no-cache openssl \
+############################################
+# 2. Create directories and TLS certificate
+############################################
+RUN mkdir -p /etc/nginx/certs \
+    /etc/modsecurity \
+    /var/log/nginx \
     && openssl req -x509 -nodes -days 3650 \
-         -subj "/C=US/ST=State/L=City/O=Organization/OU=IT Department/CN=localhost" \
+         -subj "/C=US/ST=Dev/L=Local/O=DevCompany/CN=localhost" \
          -newkey rsa:2048 \
          -keyout /etc/nginx/certs/internal.key \
-         -out /etc/nginx/certs/internal.crt
+         -out /etc/nginx/certs/internal.crt \
+    && chmod 640 /etc/nginx/certs/internal.key \
+    && chmod 644 /etc/nginx/certs/internal.crt \
+    && touch /var/log/nginx/modsec_audit.log \
+    && chown -R www-data:www-data /var/log/nginx
 
-# Custom ModSecurity config
-COPY nginx-prod/modsecurity.conf /etc/modsecurity/modsecurity.conf
 
-# Template version of nginx.conf
-COPY nginx-prod/nginx.conf /etc/nginx/templates/nginx.conf.template
+############################################
+# 3. ModSecurity configuration
+############################################
+# Basic ModSecurity config (you can mount or override with volumes in prod)
+COPY nginx/modsec.conf /etc/modsecurity/modsecurity.conf
 
-# Copy built frontend files into NGINX’s default web root
+############################################
+# 4. NGINX config
+############################################
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+
+############################################
+# 5. Copy frontend assets
+############################################
 COPY --from=frontend-build /app/dist /usr/share/nginx/html
 
-# Clean up: remove openssl to keep the image small
-RUN apk del openssl
-
+############################################
+# 7. Final setup
+############################################
 EXPOSE 80 443
 
 CMD ["nginx", "-g", "daemon off;"]

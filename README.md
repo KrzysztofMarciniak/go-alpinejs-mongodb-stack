@@ -2,31 +2,41 @@
 go alpinejs mongodb stack
 ### Production Graph
 ```mermaid
+
 flowchart TD
  subgraph External_Access["External Access"]
         Browser["Browser"]
   end
+
  subgraph Public_Network["Public Network"]
         NGINX["NGINX Reverse Proxy with Self-signed TLS cert (generated at build time), WAF (Frontend + API /api/)"]
         Grafana["Grafana (port 3000)"]
   end
+
  subgraph Internal_Backend["Internal Backend"]
         GoAPI["Go API Service"]
         MongoDB["MongoDB Database"]
   end
+
  subgraph Monitoring_Network["Monitoring Network (Internal Only)"]
         NGINX_Exporter["NGINX Exporter"]
         Prometheus["Prometheus Monitoring"]
+        Loki["Loki (logs from NGINX)"]
+        Promtail["Promtail (tails logs, sends to Loki)"]
   end
+
     Browser <-- User Access --> NGINX
     Browser <-- Admin Access --> Grafana
     NGINX -- HTTP (80) / HTTPS (443) --> Browser
     NGINX -- Internal API (8080) only for internal backend network --> GoAPI
-    GoAPI <-- DB Connection (8080) --> MongoDB
+    GoAPI <-- DB Connection (27017) --> MongoDB
     NGINX -- Metrics /nginx_status only for monitoring network --> NGINX_Exporter
     GoAPI -- Metrics (9091) /metrics --> Prometheus
     NGINX_Exporter -- "nginx-exporter:9113" --> Prometheus
     Prometheus -- nginx + go monitoring --> Grafana
+    NGINX -- ModSecurity logs --> Promtail
+    Promtail -- logs --> Loki
+    Loki -- logs --> Grafana
 
     style Browser stroke:#000000
     style Grafana stroke:#FF6D00
@@ -34,9 +44,12 @@ flowchart TD
     style MongoDB stroke:#00C853
     style NGINX_Exporter stroke:#00C853
     style Prometheus stroke:#FFD600
+    style Loki stroke:#AA00FF
+    style Promtail stroke:#AA00FF
     style External_Access stroke:#D50000
     style Internal_Backend stroke:#2962FF
     style Monitoring_Network stroke:#AA00FF
+
 ```
 ### Development Graph
 ```mermaid

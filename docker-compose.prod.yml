@@ -2,9 +2,10 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: ./Dockerfile
+      dockerfile: ./Dockerfile.prod
     volumes:
       - ./backend:/src
+      - goapi_logs:/var/log/goapi/
     environment:
       - MONGO_URI=mongodb://mongo:27017/appdb
     networks:
@@ -15,6 +16,7 @@ services:
       - "9091"   # metrics endpoint
 
   nginx:
+    container_name: nginx
     build:
       context: ./frontend
       dockerfile: ./Dockerfile.prod
@@ -27,6 +29,9 @@ services:
       - default
       - internal-backend
       - monitoring
+    volumes:
+      - nginx_logs:/var/log/nginx/
+
 
   mongo:
     image: mongo
@@ -38,11 +43,12 @@ services:
   prometheus:
     image: prom/prometheus
     volumes:
-      - ./prometheus/prometheus.prod.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml
     networks:
       - monitoring
     expose:
       - "9090"
+      
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter
     depends_on:
@@ -53,21 +59,52 @@ services:
       - "9113"      
     command:
       - "-nginx.scrape-uri=http://nginx:80/nginx_status"
+  
   grafana:
     image: grafana/grafana:latest
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin # <--- CHANGE THIS
     ports:
       - "3000:3000"
     volumes:
       - grafana_data:/var/lib/grafana
+      - loki:/tmp
+      - ./monitoring/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/grafana-datasources.yaml:ro
     networks:
       - default
+      - monitoring
+
+  loki:
+    container_name: loki
+    image: grafana/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    user: root
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki:/tmp/loki
+    networks:
+      - monitoring
+    ports:
+      - "3100"
+
+  promtail:
+    image: grafana/promtail
+    volumes:
+      - nginx_logs:/var/log/nginx/:ro
+      - promtail_positions:/tmp/promtail   
+      - goapi_logs:/var/log/goapi/:ro
+      - ./monitoring/promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    networks:
       - monitoring
 
 volumes:
   mongo_data:
   grafana_data:
+  nginx_logs:
+  loki:
+  promtail_positions:
+  goapi_logs:
 
 networks:
   default:
