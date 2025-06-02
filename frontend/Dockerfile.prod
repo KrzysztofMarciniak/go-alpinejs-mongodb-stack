@@ -25,6 +25,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     nginx \
     libnginx-mod-http-modsecurity \
+    libnginx-mod-http-headers-more-filter \
     modsecurity-crs \
     curl \
     openssl \
