@@ -45,8 +45,10 @@ flowchart TD
     style External_Access stroke:#D50000
     style Internal_Backend stroke:#2962FF
     style Monitoring_Network stroke:#AA00FF
-
 ```
+### Screenshots
+![grafana logs](imgs/grafana%20logs.png)
+![grafana logs](imgs/grafana%20chart.png)
 ### Development Graph
 ```mermaid
 flowchart TD
