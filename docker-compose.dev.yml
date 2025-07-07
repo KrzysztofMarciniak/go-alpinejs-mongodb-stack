@@ -2,8 +2,9 @@ services:
   api:
     build:
       context: ./backend
+      dockerfile: Dockerfile.dev
     volumes:
-      - ./backend:/src
+      - ./backend:/app
     ports:
       - "8080:8080"
     environment:
@@ -17,11 +18,9 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./frontend:/app
-    ports:
-      - "80:5173"
     environment:
       - NODE_ENV=development
-    command: npm run dev
+    #command: npm run dev
     networks:
       - default
   mongo:
@@ -49,6 +48,17 @@ services:
     networks:
       - monitoring    # prometheus net
       - default       
+  nginx-dev:
+    build:
+        context: ./frontend/nginx
+        dockerfile: Dockerfile.dev
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - api
+    networks:
+      - default
 volumes:
   mongo_data:
   grafana_data:

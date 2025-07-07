@@ -1,0 +1,18 @@
+FROM golang
+
+WORKDIR /app
+
+# Install Air for hot reload
+RUN go install github.com/air-verse/air@latest
+
+# Copy go mod files and download deps
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy Air config (you MUST have it in backend/.air.toml)
+COPY .air.toml ./
+
+EXPOSE 8080
+
+# Don't COPY source code — it's bind-mounted
+CMD ["air", "-c", ".air.toml"]

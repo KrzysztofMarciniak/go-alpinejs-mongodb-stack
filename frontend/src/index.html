@@ -7,7 +7,7 @@
                 <link rel="modulepreload" href="/main.js" />
                 <script type="module" src="/main.js"></script>
         </head>
-        <body class="bg-blue-200 opacity-0 transition-opacity duration-300" x-init="$el.classList.remove('opacity-0')">
+        <body class="bg-blue-200 opacity-0 transition-opacity duration-100" x-init="$el.classList.remove('opacity-0')">
                 {{> main }}
                 <div x-data="{ message: 'Hello World from Alpine!' }" class="mt-6 p-4 bg-white rounded shadow">
                         <p x-text="message" class="text-lg font-semibold"></p>
