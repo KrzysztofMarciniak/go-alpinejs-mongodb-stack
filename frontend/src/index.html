@@ -1,32 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Date Fetch</title>
-  <script type="module" src="/main.js"></script>
-  <link rel="stylesheet" href="/index.css" />
-</head>
-
-<body class="min-h-screen flex items-center justify-center bg-gray-100">
-  <div x-data="{ date: 'Loading...' }" x-init="fetch('/api/date')
-
-        .then(res => res.json())
-        .then(data => date = data.date)
-        .catch(() => date = 'Error fetching date')"
-    class="max-w-md w-full bg-white rounded-2xl shadow-lg p-6 text-center">
-    <h1 class="text-2xl font-semibold mb-4">Current Server Date</h1>
-    <p class="text-4xl font-mono text-blue-600" x-text="date"></p>
-    <button @click="date = 'Loading...'; fetch('/api/date')
-
-          .then(res => res.json())
-          .then(data => date = data.date)
-          .catch(() => date = 'Error fetching date')"
-      class="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-      Refresh
-    </button>
-  </div>
-</body>
-
+        <head>
+                <meta charset="UTF-8" />
+                <title>{{siteTitle}}</title>
+                <link rel="stylesheet" href="/style.css" />
+                <link rel="modulepreload" href="/main.js" />
+                <script type="module" src="/main.js"></script>
+        </head>
+        <body class="bg-blue-200 opacity-0 transition-opacity duration-300" x-init="$el.classList.remove('opacity-0')">
+                {{> main }}
+                <div x-data="{ message: 'Hello World from Alpine!' }" class="mt-6 p-4 bg-white rounded shadow">
+                        <p x-text="message" class="text-lg font-semibold"></p>
+                        <button
+                                x-on:click="message = 'You clicked the button!'"
+                                class="mt-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                                Click me
+                        </button>
+                </div>
+        </body>
 </html>

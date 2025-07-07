@@ -1,4 +1,5 @@
-import './index.css';
-import Alpine from 'alpinejs';
-window.Alpine = Alpine;
-Alpine.start();
+import './style.css'   // Tailwind
+import Alpine from 'alpinejs'
+
+window.Alpine = Alpine
+Alpine.start()
